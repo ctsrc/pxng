@@ -8,6 +8,20 @@
 import SwiftUI
 
 struct ContentView: View {
+    // Acceleration of Player 1 paddle Y coordinate, in range [-0.5, 0.5].
+    @State var p1YAcceleration = 0.0;
+    // Velocity of Player 1 paddle Y coordinate, in range [-0.5, 0.5].
+    @State var p1YVelocity = 0.0;
+    // Offset of Player 1 paddle Y coordinate, in range [-0.5, 0.5].
+    @State var p1YOffset = 0.0;
+    
+    // Acceleration of Player 2 paddle Y coordinate, in range [-0.5, 0.5].
+    @State var p2YAcceleration = 0.0;
+    // Velocity of Player 2 paddle Y coordinate, in range [-0.5, 0.5].
+    @State var p2YVelocity = 0.0;
+    // Offset of Player 2 paddle Y coordinate, in range [-0.5, 0.5].
+    @State var p2YOffset = 0.0;
+    
     var body: some View {
         GeometryReader { geom in
             let viewHeight = geom.size.height;
@@ -29,7 +43,12 @@ struct ContentView: View {
                 .opacity(0.1)
                 .gesture(DragGesture()
                     .onChanged({ value in
-                        print("P1 drag \(value)")
+                        p1YAcceleration = (value.location.y / viewHeight) - 0.5;
+                        print("P1 drag Y acceleration \(p1YAcceleration)")
+                    })
+                    .onEnded({ _ in
+                        p1YAcceleration = 0.0;
+                        print("P1 drag Y acceleration \(p1YAcceleration)")
                     })
                 )
             
@@ -41,7 +60,12 @@ struct ContentView: View {
                 .opacity(0.1)
                 .simultaneousGesture(DragGesture()
                     .onChanged({ value in
-                        print("P2 drag \(value)")
+                        p2YAcceleration = (value.location.y / viewHeight) - 0.5;
+                        print("P2 drag Y acceleration \(p2YAcceleration)")
+                    })
+                    .onEnded({ _ in
+                        p2YAcceleration = 0.0;
+                        print("P2 drag Y acceleration \(p2YAcceleration)")
                     })
                 )
             
@@ -57,5 +81,6 @@ struct ContentView: View {
             Circle().frame(width: ballDiam, height: ballDiam, alignment: .center)
                 .position(x: viewWidth / 2.0, y: viewHeight / 2.0)
         }
+        .ignoresSafeArea(.all, edges: .bottom)
     }
 }
