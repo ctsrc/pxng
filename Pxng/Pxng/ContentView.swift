@@ -10,10 +10,6 @@ import SwiftUI
 class Player: ObservableObject {
     let name: String;
     
-    // Paddle Y acceleration, in range [-500, 500].
-    @Published var paddleYAcceleration: Float64 = 0.0;
-    // Paddle Y velocity, in range [-250, 250].
-    @Published var paddleYVelocity: Float64 = 0.0;
     // Paddle Y coordinate offset, in range [-0.5, 0.5].
     @Published var paddleYOffset: Float64 = 0.0;
     
@@ -21,32 +17,8 @@ class Player: ObservableObject {
         self.name = name
     }
     
-    func setYAcceleration (value: Float64) {
-        //print("\(name) prev paddle Y acceleration \(paddleYAcceleration)")
-        paddleYAcceleration = value * 1000.0
-        //print("\(name) curr paddle Y acceleration \(paddleYAcceleration)")
-    }
-    
-    func step (timedelta: Float64) {
-        var paddleYVelocityNew = paddleYVelocity + paddleYAcceleration * timedelta;
-        if paddleYVelocityNew > 250 {
-            paddleYVelocityNew = 250;
-        } else if paddleYVelocityNew < -250 {
-            paddleYVelocityNew = -250;
-        }
-        //print("paddleYVelocityNew \(paddleYVelocityNew)")
-        
-        paddleYVelocity = paddleYVelocityNew;
-        
-        var paddleYOffsetNew = paddleYOffset + paddleYVelocity * timedelta;
-        if paddleYOffsetNew > 0.5 {
-            paddleYOffsetNew = 0.5;
-        } else if paddleYOffsetNew < -0.5 {
-            paddleYOffsetNew = -0.5;
-        }
-        //print("paddleYOffsetNew \(paddleYOffsetNew)")
-        
-        paddleYOffset = paddleYOffsetNew;
+    func setPaddleYOffset (value: Float64) {
+        paddleYOffset = value
     }
 }
 
@@ -62,9 +34,6 @@ class Game: ObservableObject {
          
     @objc func step(displaylink: CADisplayLink) {
         timedelta = displaylink.targetTimestamp - displaylink.timestamp;
-        //print("timedelta: \(timedelta)")
-        p1.step(timedelta: timedelta)
-        p2.step(timedelta: timedelta)
     }
 }
 
@@ -99,12 +68,8 @@ struct ContentView: View {
                 .opacity(0.1)
                 .gesture(DragGesture()
                     .onChanged({ value in
-                        //print("P1 drag gesture \(value)")
-                        let p1YAcceleration = (value.location.y / viewHeight) - 0.5;
-                        game.p1.setYAcceleration(value: p1YAcceleration)
-                    })
-                    .onEnded({ _ in
-                        game.p1.setYAcceleration(value: 0.0)
+                        let p1YOffset = (value.location.y / viewHeight) - 0.5;
+                        game.p1.setPaddleYOffset(value: p1YOffset)
                     })
                 )
             
@@ -116,12 +81,8 @@ struct ContentView: View {
                 .opacity(0.1)
                 .simultaneousGesture(DragGesture()
                     .onChanged({ value in
-                        //print("P2 drag gesture \(value)")
-                        let p2YAcceleration = (value.location.y / viewHeight) - 0.5;
-                        game.p2.setYAcceleration(value: p2YAcceleration)
-                    })
-                    .onEnded({ _ in
-                        game.p2.setYAcceleration(value: 0.0)
+                        let p2YOffset = (value.location.y / viewHeight) - 0.5;
+                        game.p2.setPaddleYOffset(value: p2YOffset)
                     })
                 )
             
