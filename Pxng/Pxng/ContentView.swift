@@ -117,6 +117,9 @@ struct ContentView: View {
             let p1PaddleYPosition = viewHeight / 2.0 + viewHeight * game.p1.paddleYOffset;
             let p2PaddleYPosition = viewHeight / 2.0 + viewHeight * game.p2.paddleYOffset;
             
+            let courtLineThickness = viewHeight / 80.0;
+            let courtLineLength = viewWidth * 0.85;
+            
             // P1 touch area
             Rectangle()
                 .frame(width: playerTouchAreaWidth, height: playerTouchAreaHeight, alignment: .center)
@@ -142,6 +145,16 @@ struct ContentView: View {
                         game.p2.setPaddleYOffset(value: p2YOffset)
                     })
                 )
+            
+            // Court line top
+            Rectangle()
+                .frame(width: courtLineLength, height: courtLineThickness, alignment: .center)
+                .position(x: viewWidth / 2.0, y: 2.0 * courtLineThickness)
+            
+            // Court line bottom
+            Rectangle()
+                .frame(width: courtLineLength, height: courtLineThickness, alignment: .center)
+                .position(x: viewWidth / 2.0, y: viewHeight - 2.0 * courtLineThickness)
             
             // P1 paddle
             Rectangle().frame(width: paddleWidth, height: paddleHeight, alignment: .center)
