@@ -7,24 +7,73 @@
 
 import SwiftUI
 
-struct ContentView: View {
-    // Acceleration of Player 1 paddle Y coordinate, in range [-0.5, 0.5].
-    @State var p1YAcceleration = 0.0;
-    // Timestamp of last update of Player 1 paddle Y acceleration
-    @State var p1YAccelUpdateTimestamp: Optional<Date> = nil;
-    // Velocity of Player 1 paddle Y coordinate, in range [-0.5, 0.5].
-    @State var p1YVelocity = 0.0;
-    // Offset of Player 1 paddle Y coordinate, in range [-0.5, 0.5].
-    @State var p1YOffset = 0.0;
+class Player: ObservableObject {
+    let name: String;
     
-    // Acceleration of Player 2 paddle Y coordinate, in range [-0.5, 0.5].
-    @State var p2YAcceleration = 0.0;
-    // Timestamp of last update of Player 2 paddle Y acceleration
-    @State var p2YAccelUpdateTimestamp: Optional<Date> = nil;
-    // Velocity of Player 2 paddle Y coordinate, in range [-0.5, 0.5].
-    @State var p2YVelocity = 0.0;
-    // Offset of Player 2 paddle Y coordinate, in range [-0.5, 0.5].
-    @State var p2YOffset = 0.0;
+    // Paddle Y acceleration, in range [-0.5, 0.5].
+    @Published var paddleYAcceleration: Float64 = 0.0;
+    // Paddle Y velocity, in range [-0.5, 0.5].
+    @Published var paddleYVelocity: Float64 = 0.0;
+    // Paddle Y coordinate offset, in range [-0.5, 0.5].
+    @Published var paddleYOffset: Float64 = 0.0;
+    
+    init(name: String) {
+        self.name = name
+    }
+    
+    func setYAcceleration (value: Float64) {
+        //print("\(name) prev paddle Y acceleration \(paddleYAcceleration)")
+        paddleYAcceleration = value
+        //print("\(name) curr paddle Y acceleration \(paddleYAcceleration)")
+    }
+    
+    func step (timedelta: Float64) {
+        var paddleYVelocityNew = paddleYVelocity + paddleYAcceleration * timedelta;
+        if paddleYVelocityNew > 0.5 {
+            paddleYVelocityNew = 0.5;
+        } else if paddleYVelocityNew < -0.5 {
+            paddleYVelocityNew = -0.5;
+        }
+        //print("paddleYVelocityNew \(paddleYVelocityNew)")
+        
+        paddleYVelocity = paddleYVelocityNew;
+        
+        var paddleYOffsetNew = paddleYOffset + paddleYVelocity * timedelta;
+        if paddleYOffsetNew > 0.5 {
+            paddleYOffsetNew = 0.5;
+        } else if paddleYOffsetNew < -0.5 {
+            paddleYOffsetNew = -0.5;
+        }
+        //print("paddleYOffsetNew \(paddleYOffsetNew)")
+        
+        paddleYOffset = paddleYOffsetNew;
+    }
+}
+
+class Game: ObservableObject {
+    @Published var p1 = Player(name: "P1");
+    @Published var p2 = Player(name: "P2");
+    @Published var timedelta = 0.5;
+    
+    func createDisplayLink() {
+        let displaylink = CADisplayLink(target: self, selector: #selector(step))
+        displaylink.add(to: .current, forMode: .default)
+    }
+         
+    @objc func step(displaylink: CADisplayLink) {
+        timedelta = displaylink.targetTimestamp - displaylink.timestamp;
+        //print("timedelta: \(timedelta)")
+        p1.step(timedelta: timedelta)
+        p2.step(timedelta: timedelta)
+    }
+}
+
+struct ContentView: View {
+    @ObservedObject var game = Game();
+    
+    init () {
+        game.createDisplayLink()
+    }
     
     var body: some View {
         GeometryReader { geom in
@@ -39,6 +88,9 @@ struct ContentView: View {
             let playerTouchAreaWidth = viewWidth / 3.0;
             let playerTouchAreaHeight = viewHeight;
             
+            let p1PaddleYPosition = viewHeight / 2.0 + viewHeight * game.p1.paddleYOffset;
+            let p2PaddleYPosition = viewHeight / 2.0 + viewHeight * game.p2.paddleYOffset;
+            
             // P1 touch area
             Rectangle()
                 .frame(width: playerTouchAreaWidth, height: playerTouchAreaHeight, alignment: .center)
@@ -47,21 +99,12 @@ struct ContentView: View {
                 .opacity(0.1)
                 .gesture(DragGesture()
                     .onChanged({ value in
-                        if let p1YAccelUpdateTimestampPrev = p1YAccelUpdateTimestamp {
-                            print("P1 drag gesture \(value)")
-                            print("P1 drag gesture time \(value.time)")
-                            let timedelta = value.time.timeIntervalSinceReferenceDate - p1YAccelUpdateTimestampPrev.timeIntervalSinceReferenceDate;
-                            print("timedelta \(timedelta)")
-                            p1YAcceleration = (value.location.y / viewHeight) - 0.5;
-                            print("P1 drag Y acceleration \(p1YAcceleration)")
-                            p1YVelocity += p1YAcceleration * timedelta;
-                            print("P1 Y velocity \(p1YVelocity)")
-                        }
-                        p1YAccelUpdateTimestamp = value.time;
+                        //print("P1 drag gesture \(value)")
+                        let p1YAcceleration = (value.location.y / viewHeight) - 0.5;
+                        game.p1.setYAcceleration(value: p1YAcceleration)
                     })
                     .onEnded({ _ in
-                        p1YAcceleration = 0.0;
-                        print("P1 drag Y acceleration \(p1YAcceleration)")
+                        game.p1.setYAcceleration(value: 0.0)
                     })
                 )
             
@@ -73,32 +116,23 @@ struct ContentView: View {
                 .opacity(0.1)
                 .simultaneousGesture(DragGesture()
                     .onChanged({ value in
-                        if let p2YAccelUpdateTimestampPrev = p2YAccelUpdateTimestamp {
-                            print("P2 drag gesture \(value)")
-                            print("P2 drag gesture time \(value.time)")
-                            let timedelta = value.time.timeIntervalSinceReferenceDate - p2YAccelUpdateTimestampPrev.timeIntervalSinceReferenceDate;
-                            print("timedelta \(timedelta)")
-                            p2YAcceleration = (value.location.y / viewHeight) - 0.5;
-                            print("P2 drag Y acceleration \(p2YAcceleration)")
-                            p2YVelocity += p2YAcceleration * timedelta;
-                            print("P2 Y velocity \(p2YVelocity)")
-                        }
-                        p2YAccelUpdateTimestamp = value.time;
+                        //print("P2 drag gesture \(value)")
+                        let p2YAcceleration = (value.location.y / viewHeight) - 0.5;
+                        game.p2.setYAcceleration(value: p2YAcceleration)
                     })
                     .onEnded({ _ in
-                        p2YAcceleration = 0.0;
-                        print("P2 drag Y acceleration \(p2YAcceleration)")
+                        game.p2.setYAcceleration(value: 0.0)
                     })
                 )
             
             // P1 paddle
             Rectangle().frame(width: paddleWidth, height: paddleHeight, alignment: .center)
-                .position(x: paddleWidth * 2.0, y: viewHeight / 2.0)
+                .position(x: paddleWidth * 2.0, y: p1PaddleYPosition)
                 .foregroundStyle(.red)
             
             // P2 paddle
             Rectangle().frame(width: paddleWidth, height: paddleHeight, alignment: .center)
-                .position(x: viewWidth - paddleWidth * 2.0, y: viewHeight / 2.0)
+                .position(x: viewWidth - paddleWidth * 2.0, y: p2PaddleYPosition)
                 .foregroundStyle(.blue)
             
             // Ball
