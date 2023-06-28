@@ -72,10 +72,12 @@ struct ContentView: View {
             // P1 paddle
             Rectangle().frame(width: paddleWidth, height: paddleHeight, alignment: .center)
                 .position(x: paddleWidth * 2.0, y: viewHeight / 2.0)
+                .foregroundStyle(.red)
             
             // P2 paddle
             Rectangle().frame(width: paddleWidth, height: paddleHeight, alignment: .center)
                 .position(x: viewWidth - paddleWidth * 2.0, y: viewHeight / 2.0)
+                .foregroundStyle(.blue)
             
             // Ball
             Circle().frame(width: ballDiam, height: ballDiam, alignment: .center)
