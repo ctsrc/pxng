@@ -41,6 +41,13 @@ class Ball: ObservableObject {
             yOffsetNew = -0.5;
         }
         
+        if xOffsetNew > 0.5 {
+            xOffsetNew = 0.5;
+        }
+        else if xOffsetNew < -0.5 {
+            xOffsetNew = -0.5;
+        }
+        
         xOffset = xOffsetNew;
         yOffset = yOffsetNew;
     }
