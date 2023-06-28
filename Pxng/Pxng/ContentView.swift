@@ -10,9 +10,9 @@ import SwiftUI
 class Player: ObservableObject {
     let name: String;
     
-    // Paddle Y acceleration, in range [-0.5, 0.5].
+    // Paddle Y acceleration, in range [-250, 250].
     @Published var paddleYAcceleration: Float64 = 0.0;
-    // Paddle Y velocity, in range [-0.5, 0.5].
+    // Paddle Y velocity, in range [-50, 50].
     @Published var paddleYVelocity: Float64 = 0.0;
     // Paddle Y coordinate offset, in range [-0.5, 0.5].
     @Published var paddleYOffset: Float64 = 0.0;
@@ -23,16 +23,16 @@ class Player: ObservableObject {
     
     func setYAcceleration (value: Float64) {
         //print("\(name) prev paddle Y acceleration \(paddleYAcceleration)")
-        paddleYAcceleration = value
+        paddleYAcceleration = value * 500.0
         //print("\(name) curr paddle Y acceleration \(paddleYAcceleration)")
     }
     
     func step (timedelta: Float64) {
         var paddleYVelocityNew = paddleYVelocity + paddleYAcceleration * timedelta;
-        if paddleYVelocityNew > 0.5 {
-            paddleYVelocityNew = 0.5;
-        } else if paddleYVelocityNew < -0.5 {
-            paddleYVelocityNew = -0.5;
+        if paddleYVelocityNew > 50 {
+            paddleYVelocityNew = 50;
+        } else if paddleYVelocityNew < -50 {
+            paddleYVelocityNew = -50;
         }
         //print("paddleYVelocityNew \(paddleYVelocityNew)")
         
