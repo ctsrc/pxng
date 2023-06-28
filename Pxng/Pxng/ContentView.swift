@@ -7,22 +7,24 @@
 
 import SwiftUI
 
-class Ball: ObservableObject {
+class Ball {
     // X coordinate offset, in range [-0.5, 0.5].
-    @Published var xOffset: Float64 = 0.0;
+    var xOffset: Float64 = 0.0;
     // Y coordinate offset, in range [-0.5, 0.5].
-    @Published var yOffset: Float64 = 0.0;
+    var yOffset: Float64 = 0.0;
     // Velocity, in range [0.0, 50.0].
     var velocity: Float64;
     // Direction of motion, in radians.
     var directionRads: Float64;
     
+    var pointScored = false;
+    
     init (vel: Float64) {
         velocity = vel;
-        let flip = Int.random(in: -1...1).signum();
+        let flip = Float64.random(in: -1...1);
         directionRads = Float64.pi * (1.0 + Float64.random(in: -0.25...0.25));
         if flip < 0 {
-            directionRads = -directionRads;
+            directionRads -= Float64.pi;
         }
     }
     
@@ -49,10 +51,14 @@ class Ball: ObservableObject {
         if xOffsetNew > 0.5 {
             xOffsetNew = 0.5;
             xComponent = -xComponent;
+            velocity = 0.0;
+            pointScored = true;
         }
         else if xOffsetNew < -0.5 {
             xOffsetNew = -0.5;
             xComponent = -xComponent;
+            velocity = 0.0;
+            pointScored = true;
         }
         
         directionRads = atan2(yComponent, xComponent);
@@ -79,7 +85,9 @@ class Player: ObservableObject {
 
 class Game: ObservableObject {
     @Published var p1 = Player(name: "P1");
+    @Published var p1Score = 0;
     @Published var p2 = Player(name: "P2");
+    @Published var p2Score = 0;
     @Published var timedelta = 0.5;
     @Published var ball = Ball(vel: 0.35);
     
@@ -90,7 +98,16 @@ class Game: ObservableObject {
          
     @objc func step(displaylink: CADisplayLink) {
         timedelta = displaylink.targetTimestamp - displaylink.timestamp;
-        ball.step(timedelta: timedelta)
+        ball.step(timedelta: timedelta);
+        if ball.pointScored {
+            if ball.xOffset > 0.0 {
+                p1Score += 1;
+            } else {
+                p2Score += 1;
+            }
+            print("Points: \(p1Score) – \(p2Score)");
+            ball = Ball(vel: 0.35);
+        }
     }
 }
 
