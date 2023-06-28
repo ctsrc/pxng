@@ -123,10 +123,10 @@ struct ContentView: View {
             let viewHeight = geom.size.height;
             let viewWidth = geom.size.width;
             
-            let paddleHeight = viewHeight / 2.0;
-            let paddleWidth = viewWidth / 40.0;
+            let paddleLength = viewHeight / 4.5;
+            let paddleThickness = viewWidth / 65.0;
             
-            let ballDiam = viewWidth / 20.0;
+            let ballDiam = viewWidth / 35.0;
             
             let playerTouchAreaWidth = viewWidth / 3.0;
             let playerTouchAreaHeight = viewHeight;
@@ -174,15 +174,15 @@ struct ContentView: View {
                 .position(x: viewWidth / 2.0, y: viewHeight - 2.0 * courtLineThickness)
             
             // P1 paddle
-            Rectangle().frame(width: paddleWidth, height: paddleHeight, alignment: .center)
+            Rectangle().frame(width: paddleThickness, height: paddleLength, alignment: .center)
                 .rotationEffect(Angle(radians: -game.p1.paddleYOffset))
-                .position(x: paddleWidth * 2.0, y: p1PaddleYPosition)
+                .position(x: paddleThickness * 2.0, y: p1PaddleYPosition)
                 .foregroundStyle(.red)
             
             // P2 paddle
-            Rectangle().frame(width: paddleWidth, height: paddleHeight, alignment: .center)
+            Rectangle().frame(width: paddleThickness, height: paddleLength, alignment: .center)
                 .rotationEffect(Angle(radians: game.p2.paddleYOffset))
-                .position(x: viewWidth - paddleWidth * 2.0, y: p2PaddleYPosition)
+                .position(x: viewWidth - paddleThickness * 2.0, y: p2PaddleYPosition)
                 .foregroundStyle(.blue)
             
             // Ball
