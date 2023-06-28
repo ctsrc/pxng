@@ -7,6 +7,45 @@
 
 import SwiftUI
 
+class Ball: ObservableObject {
+    // X coordinate offset, in range [-0.5, 0.5].
+    @Published var xOffset: Float64 = 0.0;
+    // Y coordinate offset, in range [-0.5, 0.5].
+    @Published var yOffset: Float64 = 0.0;
+    // Velocity, in range [0.0, 50.0].
+    var velocity: Float64;
+    // Direction of motion, in radians.
+    var directionRads: Float64;
+    
+    init (vel: Float64) {
+        velocity = vel;
+        let flip = Int.random(in: -1...1).signum();
+        directionRads = Float64.pi * (1.0 + Float64.random(in: -0.25...0.25));
+        if flip < 0 {
+            directionRads = -directionRads;
+        }
+    }
+    
+    func step (timedelta: Float64) {
+        let distanceDelta = timedelta * velocity;
+        let xDelta = distanceDelta * cos(directionRads);
+        let yDelta = distanceDelta * sin(directionRads);
+        
+        var xOffsetNew = xOffset + xDelta;
+        var yOffsetNew = yOffset + yDelta;
+        
+        if yOffsetNew > 0.5 {
+            yOffsetNew = 0.5;
+        }
+        else if yOffsetNew < -0.5 {
+            yOffsetNew = -0.5;
+        }
+        
+        xOffset = xOffsetNew;
+        yOffset = yOffsetNew;
+    }
+}
+
 class Player: ObservableObject {
     let name: String;
     
@@ -26,6 +65,7 @@ class Game: ObservableObject {
     @Published var p1 = Player(name: "P1");
     @Published var p2 = Player(name: "P2");
     @Published var timedelta = 0.5;
+    @Published var ball = Ball(vel: 0.35);
     
     func createDisplayLink() {
         let displaylink = CADisplayLink(target: self, selector: #selector(step))
@@ -34,6 +74,7 @@ class Game: ObservableObject {
          
     @objc func step(displaylink: CADisplayLink) {
         timedelta = displaylink.targetTimestamp - displaylink.timestamp;
+        ball.step(timedelta: timedelta)
     }
 }
 
@@ -100,7 +141,7 @@ struct ContentView: View {
             
             // Ball
             Circle().frame(width: ballDiam, height: ballDiam, alignment: .center)
-                .position(x: viewWidth / 2.0, y: viewHeight / 2.0)
+                .position(x: viewWidth / 2.0 + viewWidth * game.ball.xOffset, y: viewHeight / 2.0 + viewHeight * game.ball.yOffset)
         }
         .ignoresSafeArea(.all, edges: .bottom)
     }
