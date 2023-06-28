@@ -88,11 +88,13 @@ struct ContentView: View {
             
             // P1 paddle
             Rectangle().frame(width: paddleWidth, height: paddleHeight, alignment: .center)
+                .rotationEffect(Angle(radians: game.p1.paddleYOffset))
                 .position(x: paddleWidth * 2.0, y: p1PaddleYPosition)
                 .foregroundStyle(.red)
             
             // P2 paddle
             Rectangle().frame(width: paddleWidth, height: paddleHeight, alignment: .center)
+                .rotationEffect(Angle(radians: game.p2.paddleYOffset))
                 .position(x: viewWidth - paddleWidth * 2.0, y: p2PaddleYPosition)
                 .foregroundStyle(.blue)
             
