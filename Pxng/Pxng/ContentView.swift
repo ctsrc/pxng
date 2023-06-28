@@ -34,19 +34,28 @@ class Ball: ObservableObject {
         var xOffsetNew = xOffset + xDelta;
         var yOffsetNew = yOffset + yDelta;
         
+        var xComponent = cos(directionRads);
+        var yComponent = sin(directionRads);
+        
         if yOffsetNew > 0.5 {
             yOffsetNew = 0.5;
+            yComponent = -yComponent;
         }
         else if yOffsetNew < -0.5 {
             yOffsetNew = -0.5;
+            yComponent = -yComponent;
         }
         
         if xOffsetNew > 0.5 {
             xOffsetNew = 0.5;
+            xComponent = -xComponent;
         }
         else if xOffsetNew < -0.5 {
             xOffsetNew = -0.5;
+            xComponent = -xComponent;
         }
+        
+        directionRads = atan2(yComponent, xComponent);
         
         xOffset = xOffsetNew;
         yOffset = yOffsetNew;
